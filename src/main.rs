@@ -19,20 +19,20 @@ use crate::unit6_approximation::aitken::aitken_demo;
 use crate::unit6_approximation::DrawData;
 
 const DRAW_STEPS: usize = 10;
-const X: f32 = 1.715;
+const X: Real = 1.715;
 
 /// The function being interpolated
-fn f(x: f32) -> f32 {
-    f32::sin(x)
+fn f(x: Real) -> Real {
+    Real::sin(x)
 }
 
 fn main() {
     // Compute points for drawing the function
-    let f_domain: [f32; 2] = [1.2, 2.2];
+    let f_domain: [Real; 2] = [1.2, 2.2];
     let mut curve_points = Vec::with_capacity(DRAW_STEPS);
-    let step_len = (f_domain[1] - f_domain[0]) / DRAW_STEPS as f32;
+    let step_len = (f_domain[1] - f_domain[0]) / DRAW_STEPS as Real;
     for i in 0..DRAW_STEPS {
-        let x = f_domain[0] + step_len * i as f32;
+        let x = f_domain[0] + step_len * i as Real;
         let y = f(x);
         curve_points.push(Vec2::new(x, y));
     }
@@ -79,7 +79,7 @@ fn main() {
 fn startup(d: Res<DrawData>, mut commands: Commands) {
     // Spawning camera at the right position
     let cam_x = (d.domain[0] + d.domain[1]) / 2.;
-    let mut cam_y = d.points.iter().map(|(pt, _)| pt.y).sum::<f32>() / DRAW_STEPS as f32;
+    let mut cam_y = d.points.iter().map(|(pt, _)| pt.y).sum::<Real>() / DRAW_STEPS as Real;
     commands.spawn((
         Camera3d::default(),
         Transform::from_translation(Vec3::new(cam_x, cam_y, 2.))

@@ -6,11 +6,12 @@ pub type Real = parry::math::SimdReal;
 #[cfg(feature = "dim2")]
 mod math {
     use bevy::math::{Isometry2d, Vec2};
+    use crate::math::Real;
 
     pub type Vect = Vec2;
     pub type Iso = Isometry2d;
 
-    pub fn lin_interpol(x: f32, p0: impl Into<Vect>, p1: impl Into<Vect>) -> f32 {
+    pub fn lin_interpol(x: Real, p0: impl Into<Vect>, p1: impl Into<Vect>) -> Real {
         let p0 = p0.into();
         let p1 = p1.into();
         p0.y + (x - p0.x)/(p1.x - p0.x) * (p1.y - p0.y)

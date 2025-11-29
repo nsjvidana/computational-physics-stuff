@@ -60,7 +60,7 @@ fn update(
         let x1 = xi[i + j+1];
         let y1 = fi[j+1];
 
-        let color_mul = i as f32 / n as f32;
+        let color_mul = i as Real / n as Real;
         let color = Color::linear_rgb(0., 1. * color_mul, 1. * color_mul);
         draw_data.lines.push((
             Line::new((x0, y0), (x1, y1)),
