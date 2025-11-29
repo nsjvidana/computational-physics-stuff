@@ -9,11 +9,14 @@ extern crate parry2d as parry;
 extern crate parry3d as parry;
 
 mod math;
+mod unit2;
 
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, ButtonInput, Camera3d, Color, Commands, Gizmos, KeyCode, Res, ResMut, Resource, Startup, Transform, Update, Vec2, Vec3};
-use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
+use bevy::prelude::{App, ButtonInput, Camera3d, Color, Commands, Gizmos, KeyCode, PostUpdate, Res, ResMut, Resource, Startup, Transform, Update, Vec2, Vec3};
+use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 use crate::math::*;
+use crate::unit2::aitken::aitken_demo;
+use crate::unit2::DrawData;
 
 const DRAW_STEPS: usize = 10;
 const X: f32 = 1.715;
@@ -24,107 +27,83 @@ fn f(x: f32) -> f32 {
 }
 
 fn main() {
-    let mut app = App::new();
-
-    app.add_plugins((
-        DefaultPlugins,
-        NoCameraPlayerPlugin,
-    ))
-        .add_systems(Startup, startup)
-        .add_systems(Update, update);
-
     // Compute points for drawing the function
     let f_domain: [f32; 2] = [1.2, 2.2];
-    let mut points = Vec::with_capacity(DRAW_STEPS);
+    let mut curve_points = Vec::with_capacity(DRAW_STEPS);
     let step_len = (f_domain[1] - f_domain[0]) / DRAW_STEPS as f32;
     for i in 0..DRAW_STEPS {
         let x = f_domain[0] + step_len * i as f32;
         let y = f(x);
-        points.push(Vec2::new(x, y));
+        curve_points.push(Vec2::new(x, y));
     }
-    app.insert_resource(FunctionDrawData {
-        domain: f_domain,
-        points,
-    });
 
-    // Compute the known points that will be used in the interpolation
-    let original = vec![
+    // Known points to interpolate with
+    let knowns = vec![
         Vec2::new(1.42, f(1.42)),
         Vec2::new(1.64, f(1.64)),
         Vec2::new(1.80, f(1.80)),
         Vec2::new(1.93, f(1.93)),
         Vec2::new(2.0, f(2.0)),
     ];
-    app.insert_resource(InterpolationData {
-        f: original.clone(),
-        original,
-    });
+
+    let mut app = App::new();
+
+    let mut draw_data = DrawData {
+        points: knowns.iter()
+            .map(|v| (*v, Color::WHITE))
+            .collect(),
+        curve_points,
+        domain: f_domain,
+        ..Default::default()
+    };
+    draw_data.points.push((Vect::new(X, f(X)), Color::linear_rgb(1., 0., 0.)));
+
+    app
+        .insert_resource(MovementSettings {
+            speed: 2.,
+            ..Default::default()
+        })
+        .add_plugins((
+            DefaultPlugins,
+            NoCameraPlayerPlugin
+        ))
+        .insert_resource(draw_data)
+        .add_systems(Startup, startup)
+        .add_systems(PostUpdate, draw);
+
+    aitken_demo(&mut app, knowns, X);
 
     app.run();
 }
 
-fn startup(drawing: Res<FunctionDrawData>, mut commands: Commands) {
-    let cam_x = (drawing.domain[0] + drawing.domain[1]) / 2.;
-    let mut cam_y = 0.;
-        for pt in drawing.points.iter() {
-            cam_y += pt.y;
-        }
-        cam_y /= DRAW_STEPS as f32;
+fn startup(d: Res<DrawData>, mut commands: Commands) {
+    // Spawning camera at the right position
+    let cam_x = (d.domain[0] + d.domain[1]) / 2.;
+    let mut cam_y = d.points.iter().map(|(pt, _)| pt.y).sum::<f32>() / DRAW_STEPS as f32;
     commands.spawn((
         Camera3d::default(),
-        Transform::from_translation(Vec3::new(cam_x, cam_y, 4.))
+        Transform::from_translation(Vec3::new(cam_x, cam_y, 2.))
             .looking_at(Vec3::new(cam_x, cam_y, 0.), Vec3::Y),
         FlyCam
     ));
 }
 
-fn update(
-    drawing: Res<FunctionDrawData>,
-    mut interpol: ResMut<InterpolationData>,
-    keys: Res<ButtonInput<KeyCode>>,
+fn draw(
+    drawing: Res<DrawData>,
     mut gizmos: Gizmos,
 ) {
     // Draw the function
     for i in 1..DRAW_STEPS {
-        gizmos.line_2d(drawing.points[i-1], drawing.points[i], Color::WHITE);
+        gizmos.line_2d(drawing.curve_points[i-1], drawing.curve_points[i], Color::WHITE);
     }
 
-    // Draw current interpolation step
-    for pt in interpol.f.iter() {
-        gizmos.circle_2d(Iso::from_translation(*pt), 0.01, Color::linear_rgb(0., 1., 0.));
+    // Draw cicles around points
+    for (p, c) in drawing.points.iter() {
+        gizmos.circle_2d(*p, 0.01, *c);
     }
-    //Draw actual solution
-    gizmos.circle_2d(Iso::from_xy(X, f(X)), 0.01, Color::linear_rgb(1., 0., 0.));
 
-    if !keys.just_pressed(KeyCode::KeyT) { return; }
-    let n = interpol.original.len()-1;
-    let f = &mut interpol.f;
-    for i in 0..n {
-        for j in 0..n-i {
-            let new_f = (X - f[j].x) / (f[i+j+1].x - f[j].x) * f[j+1].y
-                + (X - f[i+j+1].x) / (f[j].x - f[i+j+1].x) * f[j].y;
-            f[j].y = new_f;
-        }
+    // Draw line segments
+    for (seg, c) in drawing.lines.iter() {
+        gizmos.line_2d(seg.start, seg.end, *c);
     }
-    *f = vec![Vec2::new(X, f[0].y)];
-}
-
-fn lin_interpol(x: f32, p1: Vec2, p2: Vec2) -> f32 {
-    let df = p2.y - p1.y;
-    p1.y + (x - p1.x)/(p2.x - p1.x) * df
-}
-
-#[derive(Resource)]
-struct FunctionDrawData {
-    points: Vec<Vec2>,
-    /// Domain of the function to draw
-    domain: [f32; 2],
-}
-
-#[derive(Resource)]
-struct InterpolationData {
-    /// Original given points. Used for drawing only.
-    original: Vec<Vec2>,
-    /// Points the current iteration of Aitken's Method will be computing with
-    f: Vec<Vec2>,
 }
