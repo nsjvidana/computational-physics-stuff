@@ -2,7 +2,7 @@ use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{App, Color, KeyCode, Res, ResMut, Resource, Update};
 use crate::math::*;
-use crate::unit2::DrawData;
+use crate::unit6_approximation::DrawData;
 
 pub fn aitken_demo(app: &mut App, knowns: Vec<Vect>, x: Real) {
     app

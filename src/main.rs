@@ -9,14 +9,14 @@ extern crate parry2d as parry;
 extern crate parry3d as parry;
 
 mod math;
-mod unit2;
+mod unit6_approximation;
 
 use bevy::DefaultPlugins;
 use bevy::prelude::{App, ButtonInput, Camera3d, Color, Commands, Gizmos, KeyCode, PostUpdate, Res, ResMut, Resource, Startup, Transform, Update, Vec2, Vec3};
 use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 use crate::math::*;
-use crate::unit2::aitken::aitken_demo;
-use crate::unit2::DrawData;
+use crate::unit6_approximation::aitken::aitken_demo;
+use crate::unit6_approximation::DrawData;
 
 const DRAW_STEPS: usize = 10;
 const X: f32 = 1.715;
