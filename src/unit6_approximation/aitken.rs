@@ -1,14 +1,15 @@
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{App, Color, KeyCode, Res, ResMut, Resource, Update};
+use parry::na;
 use crate::math::*;
 use crate::unit6_approximation::DrawData;
 
 pub fn aitken_demo(app: &mut App, knowns: Vec<Vect>, x: Real) {
     app
         .insert_resource(Aitken {
-            fi: knowns.iter().map(|v| v.y).collect(),
-            xi: knowns.iter().map(|v| v.x).collect(),
+            fi: knowns.iter().map(|v| v.y as Real).collect(),
+            xi: knowns.iter().map(|v| v.x as Real).collect(),
             x,
             i: 0
         })
@@ -45,7 +46,7 @@ fn update(
             let y1 = fi[j+1];
             fi[j] = (x-x0) / (x1 - x0) * y1
                 +(x-x1) / (x0 - x1) * y0;
-            fi[j] = lin_interpol(x, (x0, y0), (x1, y1));
+            fi[j] = lin_interpol(x, [x0, y0], [x1, y1]);
         }
     }
     println!("Aitken step {i}");
@@ -55,12 +56,12 @@ fn update(
     // Draw the resulting points
     let i = *i;
     for j in 0..(n-i) {
-        let x0 = xi[j];
-        let y0 = fi[j];
-        let x1 = xi[i + j+1];
-        let y1 = fi[j+1];
+        let x0 = xi[j] as BevyReal;
+        let y0 = fi[j] as BevyReal;
+        let x1 = xi[i + j+1] as BevyReal;
+        let y1 = fi[j+1] as BevyReal;
 
-        let color_mul = i as Real / n as Real;
+        let color_mul = i as BevyReal / n as BevyReal;
         let color = Color::linear_rgb(0., 1. * color_mul, 1. * color_mul);
         draw_data.lines.push((
             Line::new((x0, y0), (x1, y1)),
@@ -69,7 +70,10 @@ fn update(
     }
     if i == n {
         println!("Aitken algorithm finished. Drawing approximation result in green.");
-        draw_data.points.push((Vect::new(x, fi[0]), Color::linear_rgb(0., 1., 0.)));
+        draw_data.points.push((
+            Vect::new(x as BevyReal, fi[0] as BevyReal),
+            Color::linear_rgb(0., 1., 0.)
+        ));
     }
 }
 

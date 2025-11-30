@@ -1570,8 +1570,8 @@ dependencies = [
  "bevy",
  "bevy_flycam",
  "nalgebra",
- "parry2d",
- "parry3d",
+ "parry2d-f64",
+ "parry3d-f64",
  "rand 0.9.2",
 ]
 
@@ -3470,10 +3470,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "parry2d"
+name = "parry2d-f64"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8240961674a91f3eb4af1bb7451f27c18a07813d223af73789bd90b296f69940"
+checksum = "22771156fe51054b171f537fb7c9bd7247bbfed28cb1573b53ed783df73c8e19"
 dependencies = [
  "approx",
  "arrayvec",
@@ -3496,10 +3496,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "parry3d"
+name = "parry3d-f64"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29a58098398ec9b65abcd8c04501430bd273e3bb48ef3664d4d4e0eb7a44029d"
+checksum = "93bfd7cfba14c8b6e28995966e8302fa4ec374023f96e6ca920e599d7851fe90"
 dependencies = [
  "approx",
  "arrayvec",
@@ -3519,7 +3519,6 @@ dependencies = [
  "slab",
  "smallvec",
  "spade",
- "static_assertions",
  "thiserror 2.0.16",
 ]
 

@@ -1,6 +1,6 @@
 use bevy::math::Vec2;
 use bevy::prelude::{Color, Resource};
-use crate::math::{Line, Real, Vect};
+use crate::math::{BevyReal, Line, Real, Vect};
 
 pub mod aitken;
 
@@ -14,5 +14,5 @@ pub struct DrawData {
     /// Points used in drawing the curve.
     pub curve_points: Vec<Vec2>,
     /// Domain of the function to draw. Used in positioning the camera.
-    pub domain: [Real; 2],
+    pub domain: [BevyReal; 2],
 }

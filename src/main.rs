@@ -1,22 +1,20 @@
-#[cfg(all(not(feature = "dim2"), not(feature = "dim3")))]
+#[cfg(feature = "dim2")]
+extern crate parry2d_f64 as parry;
+#[cfg(feature = "dim3")]
+extern crate parry3d_f64 as parry;#[cfg(all(not(feature = "dim2"), not(feature = "dim3")))]
 compile_error!("Features dim2 or dim3 must be enabled!");
 #[cfg(all(feature = "dim2", feature = "dim3"))]
 compile_error!("Features dim2 and dim3 can't be enabled at same time!");
 
-#[cfg(feature = "dim2")]
-extern crate parry2d as parry;
-#[cfg(feature = "dim3")]
-extern crate parry3d as parry;
-
 mod math;
 mod unit6_approximation;
 
-use bevy::DefaultPlugins;
-use bevy::prelude::{App, ButtonInput, Camera3d, Color, Commands, Gizmos, KeyCode, PostUpdate, Res, ResMut, Resource, Startup, Transform, Update, Vec2, Vec3};
-use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 use crate::math::*;
 use crate::unit6_approximation::aitken::aitken_demo;
 use crate::unit6_approximation::DrawData;
+use bevy::prelude::{App, Camera3d, Color, Commands, Gizmos, PostUpdate, Res, Resource, Startup, Transform, Vec2, Vec3};
+use bevy::DefaultPlugins;
+use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 
 const DRAW_STEPS: usize = 10;
 const X: Real = 1.715;
@@ -28,22 +26,22 @@ fn f(x: Real) -> Real {
 
 fn main() {
     // Compute points for drawing the function
-    let f_domain: [Real; 2] = [1.2, 2.2];
+    let f_domain: [BevyReal; 2] = [1.2, 2.2];
     let mut curve_points = Vec::with_capacity(DRAW_STEPS);
-    let step_len = (f_domain[1] - f_domain[0]) / DRAW_STEPS as Real;
+    let step_len = (f_domain[1] - f_domain[0]) / DRAW_STEPS as BevyReal;
     for i in 0..DRAW_STEPS {
-        let x = f_domain[0] + step_len * i as Real;
-        let y = f(x);
-        curve_points.push(Vec2::new(x, y));
+        let x = f_domain[0] + step_len * i as BevyReal;
+        let y = f(x as Real);
+        curve_points.push(Vec2::new(x, y as _));
     }
 
     // Known points to interpolate with
     let knowns = vec![
-        Vec2::new(1.42, f(1.42)),
-        Vec2::new(1.64, f(1.64)),
-        Vec2::new(1.80, f(1.80)),
-        Vec2::new(1.93, f(1.93)),
-        Vec2::new(2.0, f(2.0)),
+        Vec2::new(1.42, f(1.42) as _),
+        Vec2::new(1.64, f(1.64) as _),
+        Vec2::new(1.80, f(1.80) as _),
+        Vec2::new(1.93, f(1.93) as _),
+        Vec2::new(2.0, f(2.0) as _),
     ];
 
     let mut app = App::new();
@@ -56,7 +54,7 @@ fn main() {
         domain: f_domain,
         ..Default::default()
     };
-    draw_data.points.push((Vect::new(X, f(X)), Color::linear_rgb(1., 0., 0.)));
+    draw_data.points.push((Vect::new(X as _, f(X) as _), Color::linear_rgb(1., 0., 0.)));
 
     app
         .insert_resource(MovementSettings {
@@ -79,7 +77,7 @@ fn main() {
 fn startup(d: Res<DrawData>, mut commands: Commands) {
     // Spawning camera at the right position
     let cam_x = (d.domain[0] + d.domain[1]) / 2.;
-    let mut cam_y = d.points.iter().map(|(pt, _)| pt.y).sum::<Real>() / DRAW_STEPS as Real;
+    let cam_y = d.points.iter().map(|(pt, _)| pt.y).sum::<BevyReal>() / DRAW_STEPS as BevyReal;
     commands.spawn((
         Camera3d::default(),
         Transform::from_translation(Vec3::new(cam_x, cam_y, 2.))
