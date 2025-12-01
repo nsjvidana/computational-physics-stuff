@@ -8,6 +8,7 @@ compile_error!("Features dim2 and dim3 can't be enabled at same time!");
 
 mod math;
 mod unit6_approximation;
+mod unit1_project;
 
 use crate::math::*;
 use crate::unit6_approximation::aitken::aitken_demo;
