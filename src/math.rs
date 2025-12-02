@@ -17,6 +17,11 @@ mod math {
         let p1 = p1.into();
         p0.y + (x - p0.x)/(p1.x - p0.x) * (p1.y - p0.y)
     }
+
+    /// Convert a flat index into a 2D Vector.
+    pub fn flat_idx_to_vector(i: usize, grid_dimensions: Vector<usize>) -> Vector<usize> {
+        Vector::new(i / grid_dimensions.y, i % grid_dimensions.x)
+    }
 }
 
 #[cfg(feature = "dim3")]
@@ -25,6 +30,18 @@ mod math {
 
     pub type Vect = Vec3;
     pub type Iso = Isometry3d;
+
+    /// Convert a flat index into a vector whose dimensions are as follows:
+    /// `x`: row index of x-y plane
+    /// `y`: column index of x-y plane
+    /// `z`: index of the x-y plane that the x and y indices are on
+    pub fn flat_idx_to_vector(i: usize, grid_dimensions: Vector<usize>) -> Vector<usize> {
+        Vector::new(
+            i % grid_dimensions.x,
+            (i / grid_dimensions.x) % grid_dimensions.y,
+            i / (grid_dimensions.x * grid_dimensions.y)
+        )
+    }
 }
 
 #[derive(Default)]
