@@ -2,10 +2,39 @@ use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{App, Color, KeyCode, Res, ResMut, Resource, Update};
 use parry::na;
+use crate::{f, DrawData, DRAW_STEPS, X};
 use crate::math::*;
-use crate::unit6_approximation::DrawData;
+use crate::utils::W;
 
-pub fn aitken_demo(app: &mut App, knowns: Vec<Vect>, x: Real) {
+pub fn aitken_demo(app: &mut App, x: Real) {
+    // Compute points for drawing the function
+    let f_domain: [BevyReal; 2] = [1.2, 2.2];
+    let mut curve_points = Vec::with_capacity(DRAW_STEPS);
+    let step_len = (f_domain[1] - f_domain[0]) / DRAW_STEPS as BevyReal;
+    for i in 0..DRAW_STEPS {
+        let x = f_domain[0] + step_len * i as BevyReal;
+        let y = f(x as Real);
+        curve_points.push(Vec2::new(x, y as _));
+    }
+
+    // Known points to interpolate with
+    let knowns = vec![
+        Vec2::new(1.42, f(1.42) as _),
+        Vec2::new(1.64, f(1.64) as _),
+        Vec2::new(1.80, f(1.80) as _),
+        Vec2::new(1.93, f(1.93) as _),
+        Vec2::new(2.0, f(2.0) as _),
+    ];
+
+    let mut draw_data = app.world_mut().resource_mut::<DrawData>();
+    draw_data.points.append(&mut knowns.iter()
+        .map(|v| (*v, Color::WHITE))
+        .collect()
+    );
+    draw_data.curve_points = curve_points;
+    draw_data.domain = f_domain;
+    draw_data.points.push((Vec2::new(X as _, f(X) as _), Color::linear_rgb(1., 0., 0.)));
+
     app
         .insert_resource(Aitken {
             fi: knowns.iter().map(|v| v.y as Real).collect(),

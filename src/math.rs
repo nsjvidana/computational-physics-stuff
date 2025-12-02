@@ -1,7 +1,9 @@
+use std::ops::Deref;
 pub use self::math::*;
 pub use parry::math::*;
+use crate::utils::W;
 
-pub type Real = parry::math::SimdReal;
+pub type Real = SimdReal;
 pub type BevyReal = f32;
 
 #[cfg(feature = "dim2")]
@@ -27,6 +29,8 @@ mod math {
 #[cfg(feature = "dim3")]
 mod math {
     use bevy::math::{Isometry3d, Vec3};
+    use crate::math::*;
+    use crate::utils::W;
 
     pub type Vect = Vec3;
     pub type Iso = Isometry3d;
@@ -41,6 +45,18 @@ mod math {
             (i / grid_dimensions.x) % grid_dimensions.y,
             i / (grid_dimensions.x * grid_dimensions.y)
         )
+    }
+}
+
+
+impl Into<Vector<Real>> for W<(Real, Real)> {
+    fn into(self) -> Vector<Real> {
+        let (x, y) = *self;
+        #[cfg(feature = "dim2")]
+        return Vector::new(x, y);
+
+        #[cfg(feature = "dim3")]
+        Vector::new(x, y, 0.)
     }
 }
 
