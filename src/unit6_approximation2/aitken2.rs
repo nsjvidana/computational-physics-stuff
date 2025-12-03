@@ -1,6 +1,6 @@
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
-use bevy::prelude::{App, Color, KeyCode, Res, ResMut, Resource, Update};
+use bevy::prelude::{App, Color, Gizmos, KeyCode, Res, ResMut, Resource, Update};
 use parry::na;
 use crate::{f, DrawData, DRAW_STEPS, X};
 use crate::math::*;
@@ -103,6 +103,17 @@ fn update(
             Vect::new(x as BevyReal, fi[0] as BevyReal),
             Color::linear_rgb(0., 1., 0.)
         ));
+    }
+}
+
+fn draw_aitken(
+    drawing: Res<DrawData>,
+    mut gizmos: Gizmos,
+) {
+    // Draw the function
+    for i in 1..DRAW_STEPS {
+        #[cfg(feature = "dim2")]
+        gizmos.line_2d(drawing.curve_points[i-1], drawing.curve_points[i], Color::WHITE);
     }
 }
 

@@ -45,7 +45,8 @@ fn main() {
         .add_systems(Startup, startup)
         .add_systems(PostUpdate, draw);
 
-    unit6_approximation2::aitken2::aitken_demo(&mut app, X);
+    // unit6_approximation2::aitken2::aitken_demo(&mut app, X);
+    unit1_project::visualize_electric_fields(&mut app);
 
     app.run();
 }
@@ -81,12 +82,6 @@ fn draw(
     drawing: Res<DrawData>,
     mut gizmos: Gizmos,
 ) {
-    // Draw the function
-    for i in 1..DRAW_STEPS {
-        #[cfg(feature = "dim2")]
-        gizmos.line_2d(drawing.curve_points[i-1], drawing.curve_points[i], Color::WHITE);
-    }
-
     // Draw cicles/spheres around points
     for (p, c) in drawing.points.iter() {
         #[cfg(feature = "dim2")]
