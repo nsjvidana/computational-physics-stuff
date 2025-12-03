@@ -47,7 +47,6 @@ mod math {
     }
 }
 
-
 impl Into<Vector<Real>> for W<(Real, Real)> {
     fn into(self) -> Vector<Real> {
         let (x, y) = *self;
@@ -56,6 +55,15 @@ impl Into<Vector<Real>> for W<(Real, Real)> {
 
         #[cfg(feature = "dim3")]
         Vector::new(x, y, 0.)
+    }
+}
+
+impl Into<Vect> for W<Vector<Real>> {
+    fn into(self) -> Vect {
+        #[cfg(feature = "dim2")]
+        return Vect::new(self.x as f32, self.y as f32);
+        #[cfg(feature = "dim3")]
+        Vect::new(self.x as f32, self.y as f32, self.z as f32)
     }
 }
 
