@@ -22,7 +22,7 @@ mod math {
 
     /// Convert a flat index into a 2D Vector.
     pub fn flat_idx_to_vector(i: usize, grid_dimensions: Vector<usize>) -> Vector<usize> {
-        Vector::new(i / grid_dimensions.y, i % grid_dimensions.x)
+        Vector::new(i % grid_dimensions.x, i / grid_dimensions.y)
     }
 }
 
@@ -30,7 +30,6 @@ mod math {
 mod math {
     use bevy::math::{Isometry3d, Vec3};
     use crate::math::*;
-    use crate::utils::W;
 
     pub type Vect = Vec3;
     pub type Iso = Isometry3d;
@@ -42,7 +41,7 @@ mod math {
     pub fn flat_idx_to_vector(i: usize, grid_dimensions: Vector<usize>) -> Vector<usize> {
         Vector::new(
             i % grid_dimensions.x,
-            (i / grid_dimensions.x) % grid_dimensions.y,
+            (i / grid_dimensions.y) % grid_dimensions.y,
             i / (grid_dimensions.x * grid_dimensions.y)
         )
     }
